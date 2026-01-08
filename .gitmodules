@@ -7,3 +7,6 @@
 [submodule "amplifier-foundation"]
 	path = amplifier-foundation
 	url = https://github.com/microsoft/amplifier-foundation.git
+[submodule "amplifier-bundle-issues"]
+	path = amplifier-bundle-issues
+	url = https://github.com/microsoft/amplifier-bundle-issues.git

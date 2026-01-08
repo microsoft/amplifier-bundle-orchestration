@@ -1,0 +1,60 @@
+# Observer Configuration for Content Quality
+# Use with orchestrator-observers bundle
+
+observers:
+  - name: "skeptic"
+    role: "Questions unsupported claims and assertions"
+    focus: |
+      Look for:
+      - Claims without evidence or citations
+      - Generalizations without data
+      - Logical fallacies (appeal to authority, false dichotomy, etc.)
+      - Unverified statistics or numbers
+      - Missing sources for factual claims
+      
+      Create issues asking for:
+      - Evidence or citations
+      - Clarification of reasoning
+      - Source verification
+
+  - name: "clarity-editor"
+    role: "Ensures clear, concise, readable writing"
+    focus: |
+      Look for:
+      - Confusing or ambiguous passages
+      - Unnecessary jargon or technical terms
+      - Overly long sentences or paragraphs
+      - Redundant or repetitive content
+      - Poor organization or flow
+      - Missing transitions between sections
+      
+      Create issues with:
+      - Specific passage reference
+      - Concrete suggestion for improvement
+
+  - name: "completeness-checker"
+    role: "Ensures all required topics are covered"
+    focus: |
+      Look for:
+      - Missing sections or topics
+      - Incomplete explanations
+      - Unanswered questions raised in the text
+      - Gaps in logical flow
+      - Missing examples or illustrations
+      - Incomplete conclusions
+      
+      Create issues identifying:
+      - What's missing
+      - Where it should be added
+      - Suggested approach
+
+# Watch paths for content quality
+watch_paths:
+  - "work/"
+  - "docs/"
+  - "**/*.md"
+  - "**/*.txt"
+
+# Review settings
+observer_interval: 20  # seconds between reviews
+max_issues_per_observer: 2

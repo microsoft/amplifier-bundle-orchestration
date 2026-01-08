@@ -1,0 +1,61 @@
+# Observer Configuration for Code Review
+# Use with orchestrator-observers bundle
+
+observers:
+  - name: "security-reviewer"
+    role: "Identifies security vulnerabilities and risks"
+    focus: |
+      Look for:
+      - Hardcoded secrets, API keys, or passwords
+      - SQL injection, XSS, command injection vulnerabilities
+      - Missing input validation or sanitization
+      - Insecure authentication or authorization patterns
+      - Sensitive data exposure
+      - Insecure cryptographic practices
+      
+      Create issues with:
+      - Specific file and line references
+      - Clear description of the vulnerability
+      - Suggested remediation
+
+  - name: "performance-critic"
+    role: "Identifies performance issues and inefficiencies"
+    focus: |
+      Look for:
+      - O(n^2) or worse algorithmic complexity
+      - Unnecessary database queries (N+1 problems)
+      - Memory leaks or unbounded growth
+      - Missing caching opportunities
+      - Blocking operations in async contexts
+      - Resource cleanup issues
+      
+      Create issues with:
+      - Performance impact assessment
+      - Suggested optimization approach
+
+  - name: "style-guardian"
+    role: "Ensures code follows style guidelines"
+    focus: |
+      Look for:
+      - Inconsistent naming conventions
+      - Missing or inadequate documentation
+      - Overly complex functions (too many lines, parameters)
+      - Duplicated code
+      - Magic numbers or strings
+      - Dead or commented-out code
+      
+      Create issues with:
+      - Style guideline reference
+      - Suggested improvement
+
+# Watch paths for code review
+watch_paths:
+  - "src/"
+  - "lib/"
+  - "**/*.py"
+  - "**/*.js"
+  - "**/*.ts"
+
+# Review settings
+observer_interval: 30  # seconds between reviews
+max_issues_per_observer: 3

@@ -1,0 +1,13 @@
+bundle:
+  name: orchestration-knowledge-behavior
+  version: 0.1.0
+  description: Adds orchestration pattern knowledge to any bundle (without changing orchestrator)
+
+agents:
+  include:
+    - orchestration:agents/workflow-designer
+    - orchestration:agents/observer-config
+
+context:
+  include:
+    - orchestration:context/orchestrator-selection.md

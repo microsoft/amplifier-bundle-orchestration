@@ -1,0 +1,73 @@
+name: "Content Creation Pipeline"
+description: "Research, create, and review content"
+default_profile: "general-assistant"
+
+phases:
+  # Phase 1: Parallel research
+  - name: "Research Phase"
+    execution_mode: "parallel"
+    tasks:
+      - context_name: "topic_research"
+        profile: "researcher"
+        prompt: |
+          Research the main topic thoroughly.
+          Gather key facts, statistics, and expert opinions.
+          Organize findings by subtopic.
+
+      - context_name: "audience_research"
+        profile: "researcher"
+        prompt: |
+          Research the target audience.
+          Understand their knowledge level, interests, and pain points.
+          Identify the best tone and approach for this audience.
+
+  # Phase 2: Sequential content creation
+  - name: "Content Creation"
+    execution_mode: "sequential"
+    tasks:
+      - context_name: "outline_creator"
+        profile: "writer"
+        prompt: |
+          Create a detailed outline for the content.
+          Include: main sections, key points, and flow logic.
+          Consider audience research findings.
+
+      - context_name: "content_writer"
+        profile: "writer"
+        prompt: |
+          Write the full content based on the outline.
+          Incorporate research findings throughout.
+          Maintain consistent tone and style.
+
+  # Phase 3: Parallel review
+  - name: "Review Phase"
+    execution_mode: "parallel"
+    tasks:
+      - context_name: "content_reviewer"
+        profile: "editor"
+        prompt: |
+          Review the content for:
+          - Clarity and readability
+          - Engagement and flow
+          - Factual accuracy
+          Provide specific feedback with suggestions.
+
+      - context_name: "technical_reviewer"
+        profile: "technical-editor"
+        prompt: |
+          Review the content for:
+          - Technical accuracy
+          - Appropriate depth
+          - Missing important concepts
+          Provide specific feedback with suggestions.
+
+  # Phase 4: Final refinement
+  - name: "Refinement Phase"
+    execution_mode: "sequential"
+    tasks:
+      - context_name: "refiner"
+        profile: "writer"
+        prompt: |
+          Refine the content based on reviewer feedback.
+          Address all concerns raised.
+          Polish for final publication.

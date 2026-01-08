@@ -1,0 +1,68 @@
+name: "Code Review Pipeline"
+description: "Multi-perspective code review with parallel reviewers"
+default_profile: "code-reviewer"
+
+phases:
+  # Phase 1: Code understanding
+  - name: "Code Analysis"
+    execution_mode: "sequential"
+    tasks:
+      - context_name: "code_analyzer"
+        prompt: |
+          Analyze the code to be reviewed.
+          Provide:
+          - High-level overview of what the code does
+          - Key components and their responsibilities
+          - External dependencies
+          - Entry points and flow
+
+  # Phase 2: Parallel multi-perspective review
+  - name: "Review Phase"
+    execution_mode: "parallel"
+    tasks:
+      - context_name: "security_reviewer"
+        profile: "security-expert"
+        prompt: |
+          Review the code for security issues:
+          - Input validation and sanitization
+          - Authentication and authorization
+          - Injection vulnerabilities (SQL, XSS, command)
+          - Hardcoded secrets or credentials
+          - Secure data handling
+          Create issues for any problems found.
+
+      - context_name: "performance_reviewer"
+        profile: "performance-expert"
+        prompt: |
+          Review the code for performance issues:
+          - Algorithmic complexity
+          - Resource usage (memory, connections)
+          - Potential bottlenecks
+          - Caching opportunities
+          - Unnecessary computations
+          Create issues for any problems found.
+
+      - context_name: "maintainability_reviewer"
+        profile: "code-quality-expert"
+        prompt: |
+          Review the code for maintainability:
+          - Code organization and structure
+          - Naming conventions
+          - Documentation and comments
+          - Error handling patterns
+          - Test coverage
+          Create issues for any problems found.
+
+  # Phase 3: Issue synthesis
+  - name: "Synthesis Phase"
+    execution_mode: "sequential"
+    tasks:
+      - context_name: "review_synthesizer"
+        profile: "tech-lead"
+        prompt: |
+          Synthesize all review feedback into a prioritized list.
+          For each issue:
+          - Assign priority (critical, high, medium, low)
+          - Provide actionable fix recommendations
+          - Note any blocking issues
+          Create a final review summary.

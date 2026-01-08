@@ -1,0 +1,61 @@
+# Example Multi-Context Workflow
+# Demonstrates sequential phases with both sequential and parallel task execution
+
+name: "Content Creation Pipeline"
+description: "Research, create, and review content using multiple specialized contexts"
+default_profile: "general-assistant"
+
+phases:
+  # Phase 1: Research (parallel information gathering)
+  - name: "Research Phase"
+    execution_mode: "parallel"
+    tasks:
+      - context_name: "market_research"
+        profile: "researcher"
+        prompt: "Research current trends in AI-assisted development tools. Focus on user adoption and pain points."
+
+      - context_name: "technical_research"
+        profile: "researcher"
+        prompt: "Research technical approaches to multi-context orchestration in AI systems. Include best practices."
+
+      - context_name: "competitive_analysis"
+        profile: "researcher"
+        prompt: "Analyze competing products in the AI orchestration space. What are their key features?"
+
+  # Phase 2: Content Creation (sequential to build on research)
+  - name: "Content Creation Phase"
+    execution_mode: "sequential"
+    tasks:
+      - context_name: "content_writer"
+        profile: "writer"
+        prompt: "Based on research findings, draft a blog post about multi-context orchestration benefits. Make it engaging and informative."
+
+      - context_name: "technical_writer"
+        profile: "writer"
+        prompt: "Create technical documentation explaining how to use the multi-context orchestrator. Include code examples."
+
+  # Phase 3: Review and Refinement (parallel reviews)
+  - name: "Review Phase"
+    execution_mode: "parallel"
+    tasks:
+      - context_name: "content_reviewer"
+        profile: "editor"
+        prompt: "Review the blog post for clarity, engagement, and accuracy. Provide specific improvement suggestions."
+
+      - context_name: "technical_reviewer"
+        profile: "technical-editor"
+        prompt: "Review the technical documentation for accuracy and completeness. Check code examples."
+
+  # Phase 4: Final Polish (sequential refinements)
+  - name: "Final Polish Phase"
+    execution_mode: "sequential"
+    tasks:
+      - context_name: "content_writer"
+        prompt: "Apply reviewer feedback to improve the blog post. Keep the engaging tone while addressing concerns."
+
+      - context_name: "technical_writer"
+        prompt: "Update technical documentation based on technical review. Ensure all code examples are correct."
+
+config:
+  max_context_history: 50
+  continue_on_error: true

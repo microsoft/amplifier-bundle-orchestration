@@ -1,0 +1,53 @@
+name: "Research Pipeline"
+description: "Parallel research followed by sequential synthesis"
+default_profile: "researcher"
+
+phases:
+  # Phase 1: Parallel research across different angles
+  - name: "Research Phase"
+    execution_mode: "parallel"
+    tasks:
+      - context_name: "market_research"
+        prompt: |
+          Research current market trends and competitive landscape.
+          Focus on: key players, market size, growth trends, and emerging opportunities.
+          Provide a structured summary with bullet points.
+
+      - context_name: "technical_research"
+        prompt: |
+          Research technical approaches and implementations.
+          Focus on: architectures, technologies, best practices, and trade-offs.
+          Provide a structured summary with bullet points.
+
+      - context_name: "user_research"
+        prompt: |
+          Research user needs and pain points.
+          Focus on: target personas, use cases, friction points, and desired outcomes.
+          Provide a structured summary with bullet points.
+
+  # Phase 2: Synthesis of research findings
+  - name: "Synthesis Phase"
+    execution_mode: "sequential"
+    tasks:
+      - context_name: "synthesizer"
+        profile: "analyst"
+        prompt: |
+          Synthesize the research findings from all three research contexts.
+          Create a comprehensive report that:
+          1. Summarizes key findings from each research area
+          2. Identifies patterns and connections across areas
+          3. Highlights opportunities and risks
+          4. Provides actionable recommendations
+
+  # Phase 3: Executive summary
+  - name: "Summary Phase"
+    execution_mode: "sequential"
+    tasks:
+      - context_name: "executive_writer"
+        profile: "writer"
+        prompt: |
+          Create an executive summary of the synthesized research.
+          Keep it to one page, focusing on:
+          - Key insights (3-5 bullets)
+          - Strategic recommendations (2-3 bullets)
+          - Next steps
