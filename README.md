@@ -1,113 +1,164 @@
 # Amplifier Orchestration Bundle
 
-Advanced orchestration patterns for the Amplifier ecosystem.
+Event-driven orchestration primitives for multi-session coordination in the Amplifier ecosystem.
 
 ## Overview
 
-This bundle provides three orchestration patterns beyond the standard loop-streaming orchestrator:
+This bundle provides infrastructure for:
 
-| Pattern | Description | Best For |
-|---------|-------------|----------|
-| **Observer** | File-watching for bottom-up feedback | Code review, quality assurance |
-| **Conversation Observer** | Conversation-watching for real-time feedback | Conversation quality, coaching |
-| **Multi-Context** | Complex pipelines with isolated contexts | Research pipelines, content creation |
+| Component | Purpose |
+|-----------|---------|
+| **EventRouter** | Cross-session pub/sub communication |
+| **Triggers** | Timer, session event, and manual trigger sources |
+| **BackgroundSessionManager** | Long-running sessions that respond to triggers |
 
 ## Installation
 
 ```bash
-# Clone the bundle
-git clone https://github.com/payneio/amplifier-bundle-orchestration
-
-# Install module dependencies
-pip install -e ./modules/amplifier-module-orchestrator-observers
-pip install -e ./modules/amplifier-module-orchestrator-conversation-observers
-pip install -e ./modules/amplifier-module-orchestrator-multi-context
+uv pip install git+https://github.com/microsoft/amplifier-bundle-orchestration
 ```
 
-## Usage
+## Quick Start
 
-### Default Bundle (adds agents, uses standard orchestrator)
+### Event Routing
 
-```bash
-amplifier run --bundle ./amplifier-bundle-orchestration/bundle.md "Help me design a workflow"
+```python
+from amplifier_orchestration import EventRouter
+
+router = EventRouter()
+
+# Subscribe to events
+async for event in router.subscribe(["work:completed"]):
+    print(f"Work done by {event.source_session_id}: {event.data}")
+
+# Emit an event
+await router.emit("work:completed", {"task_id": "123"}, source_session_id="worker-1")
+
+# Wait for a single event with timeout
+event = await router.wait_for_event(["session:end"], timeout=60.0)
 ```
 
-### Observer Pattern Bundle
+### Triggers
 
-```bash
-amplifier run --bundle ./amplifier-bundle-orchestration/bundles/observers.md "Review my code"
+```python
+from amplifier_orchestration import TimerTrigger, SessionEventTrigger, ManualTrigger
+
+# Timer trigger - fires at intervals
+timer = TimerTrigger()
+timer.configure({"interval_seconds": 60, "immediate": True})
+async for event in timer.watch():
+    print(f"Timer fired: {event.data}")
+
+# Session event trigger - fires on events from EventRouter
+session_trigger = SessionEventTrigger(event_router)
+session_trigger.configure({"event_names": ["work:completed"]})
+
+# Manual trigger - fires programmatically
+manual = ManualTrigger()
+await manual.fire({"reason": "user requested"})
 ```
 
-### Conversation Observer Bundle
+### Background Session Manager
 
-```bash
-amplifier run --bundle ./amplifier-bundle-orchestration/bundles/conversation-observers.md "Monitor my conversation"
+```python
+from amplifier_orchestration import BackgroundSessionManager, BackgroundSessionConfig
+
+manager = BackgroundSessionManager(parent_session, event_router)
+
+# Start a background session that runs periodically
+session_id = await manager.start(BackgroundSessionConfig(
+    name="periodic-check",
+    bundle="tools:health-check",
+    triggers=[{"type": "timer", "config": {"interval_seconds": 300}}],
+    instruction_template="Run health check: {event_summary}",
+    pool_size=1,  # Max concurrent instances
+))
+
+# Check status
+status = manager.get_status()
+print(f"Running: {status['running']}, Total triggers: {status['sessions'][session_id]['trigger_count']}")
+
+# Stop when done
+await manager.stop(session_id)
 ```
 
-### Multi-Context Workflow Bundle
+## Use Cases
 
-```bash
-amplifier run --bundle ./amplifier-bundle-orchestration/bundles/multi-context.md "Run my research pipeline"
+### Worker Pools
+
+Spawn worker sessions in response to queued tasks:
+
+```python
+config = BackgroundSessionConfig(
+    name="worker",
+    bundle="workers:task-processor",
+    triggers=[{"type": "session_event", "config": {"event_names": ["task:queued"]}}],
+    pool_size=5,  # Max 5 concurrent workers
+    instruction_template="Process task: {event_data}",
+)
 ```
 
-## Bundle Structure
+### Periodic Tasks
 
-```
-amplifier-bundle-orchestration/
-├── bundle.md                          # Main bundle (default orchestrator + agents)
-├── bundles/                           # Alternative session configurations
-│   ├── observers.md                   # File-watching observer pattern
-│   ├── conversation-observers.md      # Conversation-watching pattern
-│   └── multi-context.md               # Multi-context workflow pattern
-├── behaviors/                         # Reusable behaviors
-│   └── orchestration-knowledge.yaml   # Adds docs and agents
-├── agents/                            # Orchestration-specific agents
-│   ├── workflow-designer.md           # Designs multi-context workflows
-│   └── observer-config.md             # Configures observer patterns
-├── context/                           # Documentation
-│   ├── instructions.md                # Main instructions
-│   ├── orchestrator-selection.md      # Pattern selection guide
-│   ├── observers-guide.md             # Observer pattern guide
-│   ├── conversation-observers-guide.md
-│   └── multi-context-guide.md
-├── modules/                           # Orchestrator modules
-│   ├── amplifier-module-orchestrator-observers/
-│   ├── amplifier-module-orchestrator-conversation-observers/
-│   └── amplifier-module-orchestrator-multi-context/
-├── examples/                          # Example configurations
-│   ├── workflows/
-│   │   ├── research-pipeline.yaml
-│   │   ├── content-creation.yaml
-│   │   └── code-review-pipeline.yaml
-│   └── observer-configs/
-│       ├── code-review-observers.yaml
-│       └── quality-observers.yaml
-└── README.md
+Run maintenance sessions on a schedule:
+
+```python
+config = BackgroundSessionConfig(
+    name="cleanup",
+    bundle="maintenance:cleanup",
+    triggers=[{"type": "timer", "config": {"interval_seconds": 3600}}],
+)
 ```
 
-## Agents
+### Event-Driven Pipelines
 
-### workflow-designer
+Chain sessions together via events:
 
-Designs multi-context workflows. Helps with:
-- Creating YAML workflow definitions
-- Phase planning (sequential vs parallel)
-- Context isolation strategy
-- Profile mapping
+```python
+# Stage 1 emits when complete
+await event_router.emit("stage1:complete", {"output": result})
 
-### observer-config
+# Stage 2 triggers on stage 1 completion
+stage2_config = BackgroundSessionConfig(
+    name="stage2",
+    bundle="pipeline:stage2",
+    triggers=[{"type": "session_event", "config": {"event_names": ["stage1:complete"]}}],
+)
+```
 
-Configures observer patterns. Helps with:
-- Defining observer roles and focus areas
-- Choosing between file-watching and conversation-watching
-- Setting up feedback loops
+## API Reference
 
-## Documentation
+### EventRouter
 
-- [Pattern Selection Guide](context/orchestrator-selection.md)
-- [Observer Pattern Guide](context/observers-guide.md)
-- [Conversation Observer Guide](context/conversation-observers-guide.md)
-- [Multi-Context Guide](context/multi-context-guide.md)
+| Method | Description |
+|--------|-------------|
+| `emit(name, data, source_session_id)` | Emit an event to all subscribers |
+| `subscribe(event_names, source_sessions, queue_size)` | Subscribe to events (async iterator) |
+| `wait_for_event(event_names, source_sessions, timeout)` | Wait for a single event |
+| `create_session_emitter(session_id)` | Create a bound emitter for a session |
+
+### TriggerSource Protocol
+
+| Method | Description |
+|--------|-------------|
+| `configure(config)` | Configure the trigger from a dict |
+| `watch()` | Async iterator yielding TriggerEvent objects |
+| `stop()` | Stop watching for events |
+
+### BackgroundSessionManager
+
+| Method | Description |
+|--------|-------------|
+| `start(config)` | Start a background session, returns session_id |
+| `stop(session_id)` | Stop a specific background session |
+| `stop_all()` | Stop all background sessions |
+| `get_status(session_id=None)` | Get status of one or all sessions |
+| `fire_manual(session_id, data)` | Programmatically trigger a session |
+
+## Dependencies
+
+- `amplifier-core` - Kernel session infrastructure
+- `amplifier-foundation` - `spawn_bundle()` primitive for session spawning
 
 ## License
 
