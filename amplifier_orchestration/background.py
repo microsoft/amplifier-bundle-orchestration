@@ -43,7 +43,8 @@ from amplifier_orchestration.triggers import (
 
 if TYPE_CHECKING:
     from amplifier_core import AmplifierSession
-    from amplifier_foundation.spawn import SessionStorage
+
+    from amplifier_orchestration.spawn import SessionStorage
 
 logger = logging.getLogger(__name__)
 
@@ -447,8 +448,7 @@ class BackgroundSessionManager:
         state.spawn_count += 1
 
         try:
-            # Import here to avoid circular imports
-            from amplifier_foundation.spawn import spawn_bundle
+            from amplifier_orchestration.spawn import spawn_bundle
 
             result = await spawn_bundle(
                 bundle=config.bundle,
